@@ -13,7 +13,6 @@ const DATA_DIR = path.join(__dirname, "data");
 const CHANNELS_FILE = path.join(DATA_DIR, "channels.json");
 const INSTAGRAM_FILE = path.join(DATA_DIR, "instagram.json");
 const TIKTOK_FILE = path.join(DATA_DIR, "tiktok.json");
-const CROSSPOST_FILE = path.join(DATA_DIR, "crosspost.json");
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
 
 function loadStoredChannels() {
@@ -34,7 +33,6 @@ function saveStoredChannels(channels) {
 let storedChannels = loadStoredChannels();
 let storedInstagram = loadStoredInstagram();
 let storedTiktok = loadStoredTiktok();
-let storedCrosspost = loadStoredCrosspost();
 let storedSettings = loadStoredSettings();
 
 function loadStoredInstagram() {
@@ -65,21 +63,6 @@ function loadStoredTiktok() {
 function saveStoredTiktok(accounts) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(TIKTOK_FILE, JSON.stringify(accounts, null, 2));
-}
-
-function loadStoredCrosspost() {
-  try {
-    const raw = fs.readFileSync(CROSSPOST_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveStoredCrosspost(links) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(CROSSPOST_FILE, JSON.stringify(links, null, 2));
 }
 
 function loadStoredSettings() {
@@ -312,44 +295,20 @@ app.post("/tiktok/publish", (req, res) => {
   });
 });
 
-app.get("/crosspost/links", (req, res) => {
-  res.json({ links: storedCrosspost });
-});
-
-app.post("/crosspost/links", (req, res) => {
-  const { name, youtubeChannelId, instagramAccountId, tiktokAccountId } = req.body || {};
-  if (!youtubeChannelId) {
-    return res.status(400).json({ error: "YouTube channel required" });
-  }
-  const link = {
-    name: name || "",
-    youtubeChannelId,
-    instagramAccountId: instagramAccountId || "",
-    tiktokAccountId: tiktokAccountId || "",
-  };
-  storedCrosspost = storedCrosspost.filter(
-    (item) => item.youtubeChannelId !== youtubeChannelId
-  );
-  storedCrosspost.push(link);
-  saveStoredCrosspost(storedCrosspost);
-  console.info("Saved crosspost link", link);
-  return res.json({ ok: true });
-});
-
 app.get("/settings", (req, res) => {
   res.json(storedSettings);
 });
 
 app.post("/settings", (req, res) => {
-  const { presetName, publishTo, autoSchedule } = req.body || {};
+  const { selectedChannels } = req.body || {};
   storedSettings = {
-    presetName: presetName || "",
-    publishTo: {
-      youtube: Boolean(publishTo?.youtube),
-      instagram: Boolean(publishTo?.instagram),
-      tiktok: Boolean(publishTo?.tiktok),
+    selectedChannels: {
+      youtube: Array.isArray(selectedChannels?.youtube) ? selectedChannels.youtube : [],
+      instagram: Array.isArray(selectedChannels?.instagram)
+        ? selectedChannels.instagram
+        : [],
+      tiktok: Array.isArray(selectedChannels?.tiktok) ? selectedChannels.tiktok : [],
     },
-    autoSchedule: Boolean(autoSchedule),
   };
   saveStoredSettings(storedSettings);
   console.info("Saved settings", storedSettings);

@@ -21,20 +21,11 @@ const tiktokAccountId = document.getElementById("tiktokAccountId");
 const tiktokAccessToken = document.getElementById("tiktokAccessToken");
 const tiktokStatus = document.getElementById("tiktokStatus");
 const tiktokProxyUrl = document.getElementById("tiktokProxyUrl");
-const crosspostForm = document.getElementById("crosspostForm");
-const crosspostYoutube = document.getElementById("crosspostYoutube");
-const crosspostInstagram = document.getElementById("crosspostInstagram");
-const crosspostTiktok = document.getElementById("crosspostTiktok");
-const crosspostStatus = document.getElementById("crosspostStatus");
-const crosspostList = document.getElementById("crosspostList");
-const crosspostName = document.getElementById("crosspostName");
 const settingsForm = document.getElementById("settingsForm");
-const presetName = document.getElementById("presetName");
-const settingsYoutube = document.getElementById("settingsYoutube");
-const settingsInstagram = document.getElementById("settingsInstagram");
-const settingsTiktok = document.getElementById("settingsTiktok");
-const settingsAutoSchedule = document.getElementById("settingsAutoSchedule");
 const settingsStatus = document.getElementById("settingsStatus");
+const settingsYoutubeList = document.getElementById("settingsYoutubeList");
+const settingsInstagramList = document.getElementById("settingsInstagramList");
+const settingsTiktokList = document.getElementById("settingsTiktokList");
 
 let availableChannels = [];
 let instagramAccounts = [];
@@ -106,9 +97,6 @@ uploadForm.addEventListener("submit", async (event) => {
     "input[name='publishAt']"
   );
   const perFileChannelInputs = scheduleList.querySelectorAll("select[name='channelId']");
-  const perFileCrosspostInputs = scheduleList.querySelectorAll(
-    "input[name='crosspost']"
-  );
   perFileTitleInputs.forEach((input) => {
     formData.append("title", input.value);
   });
@@ -120,9 +108,6 @@ uploadForm.addEventListener("submit", async (event) => {
   });
   perFileChannelInputs.forEach((input) => {
     formData.append("channelId", input.value);
-  });
-  perFileCrosspostInputs.forEach((input) => {
-    formData.append("crosspost", input.checked ? "true" : "false");
   });
   const response = await fetch("/upload", {
     method: "POST",
@@ -209,47 +194,14 @@ if (tiktokForm) {
   });
 }
 
-if (crosspostForm) {
-  crosspostForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    crosspostStatus.textContent = "Сохранение...";
-    logEvent("Сохраняем связь для кросспостинга...");
-    const payload = {
-      name: crosspostName.value.trim(),
-      youtubeChannelId: crosspostYoutube.value,
-      instagramAccountId: crosspostInstagram.value,
-      tiktokAccountId: crosspostTiktok.value,
-    };
-    const response = await fetch("/crosspost/links", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      crosspostStatus.textContent = error.error || "Ошибка сохранения";
-      logEvent(`Ошибка кросспостинга: ${error.error || "неизвестно"}`);
-      return;
-    }
-    crosspostStatus.textContent = "Связь сохранена.";
-    logEvent("Связь для кросспостинга сохранена.");
-    await loadCrosspostLinks();
-  });
-}
-
 if (settingsForm) {
   settingsForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     settingsStatus.textContent = "Сохранение...";
     logEvent("Сохраняем базовые настройки...");
+    const selectedChannels = collectSelectedChannels();
     const payload = {
-      presetName: presetName.value.trim(),
-      publishTo: {
-        youtube: settingsYoutube.checked,
-        instagram: settingsInstagram.checked,
-        tiktok: settingsTiktok.checked,
-      },
-      autoSchedule: settingsAutoSchedule.checked,
+      selectedChannels,
     };
     const response = await fetch("/settings", {
       method: "POST",
@@ -318,19 +270,6 @@ function renderScheduleItems(files) {
     channelSelect.name = "channelId";
     channelSelect.required = true;
 
-    const channelLock = document.createElement("label");
-    channelLock.className = "schedule-lock";
-
-    const channelLockInput = document.createElement("input");
-    channelLockInput.type = "checkbox";
-    channelLockInput.name = "lockChannel";
-
-    const channelLockText = document.createElement("span");
-    channelLockText.textContent = "Только этот";
-
-    channelLock.appendChild(channelLockInput);
-    channelLock.appendChild(channelLockText);
-
     if (availableChannels.length === 0) {
       const option = document.createElement("option");
       option.value = "";
@@ -358,18 +297,6 @@ function renderScheduleItems(files) {
     const channelWrapper = document.createElement("div");
     channelWrapper.className = "schedule-channel";
     channelWrapper.appendChild(channelSelect);
-    channelWrapper.appendChild(channelLock);
-
-    const crosspostLabel = document.createElement("label");
-    crosspostLabel.className = "schedule-lock";
-    const crosspostInput = document.createElement("input");
-    crosspostInput.type = "checkbox";
-    crosspostInput.name = "crosspost";
-    const crosspostText = document.createElement("span");
-    crosspostText.textContent = "Отправить в другие соцсети";
-    crosspostLabel.appendChild(crosspostInput);
-    crosspostLabel.appendChild(crosspostText);
-    channelWrapper.appendChild(crosspostLabel);
 
     wrapper.appendChild(channelWrapper);
     scheduleList.appendChild(wrapper);
@@ -395,19 +322,6 @@ function renderScheduleItems(files) {
       });
     }
 
-    channelLockInput.addEventListener("change", () => {
-      if (!channelLockInput.checked) {
-        return;
-      }
-      const selectedValue = channelSelect.value;
-      if (!selectedValue) {
-        return;
-      }
-      const channelSelects = scheduleList.querySelectorAll("select[name='channelId']");
-      channelSelects.forEach((select) => {
-        select.value = selectedValue;
-      });
-    });
   });
 }
 
@@ -441,7 +355,6 @@ async function loadChannels() {
   }
   renderScheduleItems(videoInput.files);
   await loadSocialAccounts();
-  await loadCrosspostLinks();
   await loadSettings();
 }
 
@@ -454,15 +367,7 @@ async function loadSettings() {
     return;
   }
   const data = await response.json();
-  if (data.presetName) {
-    presetName.value = data.presetName;
-  }
-  if (data.publishTo) {
-    settingsYoutube.checked = Boolean(data.publishTo.youtube);
-    settingsInstagram.checked = Boolean(data.publishTo.instagram);
-    settingsTiktok.checked = Boolean(data.publishTo.tiktok);
-  }
-  settingsAutoSchedule.checked = Boolean(data.autoSchedule);
+  applySelectedChannels(data.selectedChannels || {});
 }
 
 async function loadSocialAccounts() {
@@ -475,71 +380,70 @@ async function loadSocialAccounts() {
   instagramAccounts = instagramData.accounts || [];
   tiktokAccounts = tiktokData.accounts || [];
 
-  if (crosspostInstagram) {
-    crosspostInstagram.innerHTML = "";
-    const blank = document.createElement("option");
-    blank.value = "";
-    blank.textContent = "Не выбрано";
-    crosspostInstagram.appendChild(blank);
-    instagramAccounts.forEach((account) => {
-      const option = document.createElement("option");
-      option.value = account.id;
-      option.textContent = account.label || account.id;
-      crosspostInstagram.appendChild(option);
-    });
-  }
-
-  if (crosspostTiktok) {
-    crosspostTiktok.innerHTML = "";
-    const blank = document.createElement("option");
-    blank.value = "";
-    blank.textContent = "Не выбрано";
-    crosspostTiktok.appendChild(blank);
-    tiktokAccounts.forEach((account) => {
-      const option = document.createElement("option");
-      option.value = account.id;
-      option.textContent = account.label || account.id;
-      crosspostTiktok.appendChild(option);
-    });
-  }
-
-  if (crosspostYoutube) {
-    crosspostYoutube.innerHTML = "";
-    const blank = document.createElement("option");
-    blank.value = "";
-    blank.textContent = "Выберите канал";
-    crosspostYoutube.appendChild(blank);
-    availableChannels.forEach((channel) => {
-      const option = document.createElement("option");
-      option.value = channel.id;
-      option.textContent = channel.label || channel.title;
-      crosspostYoutube.appendChild(option);
-    });
-  }
+  renderSettingsList(settingsYoutubeList, availableChannels, "youtube");
+  renderSettingsList(settingsInstagramList, instagramAccounts, "instagram");
+  renderSettingsList(settingsTiktokList, tiktokAccounts, "tiktok");
 }
 
-async function loadCrosspostLinks() {
-  if (!crosspostList) {
+function renderSettingsList(container, items, network) {
+  if (!container) {
     return;
   }
-  const response = await fetch("/crosspost/links");
-  const data = await response.json();
-  const links = data.links || [];
-  crosspostList.innerHTML = "";
-  if (links.length === 0) {
-    crosspostList.textContent = "Связи не настроены.";
+  container.innerHTML = "";
+  if (!items || items.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "status";
+    empty.textContent = "Аккаунты не подключены.";
+    container.appendChild(empty);
     return;
   }
-  links.forEach((link) => {
-    const yt = availableChannels.find((c) => c.id === link.youtubeChannelId);
-    const ig = instagramAccounts.find((a) => a.id === link.instagramAccountId);
-    const tt = tiktokAccounts.find((a) => a.id === link.tiktokAccountId);
-    const row = document.createElement("span");
-    const name = link.name ? `(${link.name}) ` : "";
-    row.textContent = `${name}YouTube: ${yt?.label || yt?.title || link.youtubeChannelId} • Instagram: ${
-      ig?.label || link.instagramAccountId || "—"
-    } • TikTok: ${tt?.label || link.tiktokAccountId || "—"}`;
-    crosspostList.appendChild(row);
+  items.forEach((item) => {
+    const label = document.createElement("label");
+    label.className = "settings-option";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.network = network;
+    checkbox.value = item.id;
+    const text = document.createElement("span");
+    text.textContent = item.label || item.title || item.id;
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    container.appendChild(label);
+  });
+}
+
+function collectSelectedChannels() {
+  const selected = { youtube: [], instagram: [], tiktok: [] };
+  const checkboxes = settingsForm?.querySelectorAll(
+    ".settings-option input[type='checkbox']"
+  );
+  if (!checkboxes) {
+    return selected;
+  }
+  checkboxes.forEach((checkbox) => {
+    if (!checkbox.checked) {
+      return;
+    }
+    const network = checkbox.dataset.network;
+    if (!selected[network]) {
+      selected[network] = [];
+    }
+    selected[network].push(checkbox.value);
+  });
+  return selected;
+}
+
+function applySelectedChannels(selectedChannels) {
+  if (!settingsForm) {
+    return;
+  }
+  const checkboxes = settingsForm.querySelectorAll(
+    ".settings-option input[type='checkbox']"
+  );
+  checkboxes.forEach((checkbox) => {
+    const network = checkbox.dataset.network;
+    const list = selectedChannels?.[network] || [];
+    checkbox.checked = list.includes(checkbox.value);
   });
 }
 

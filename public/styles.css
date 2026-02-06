@@ -212,19 +212,10 @@ textarea {
   gap: 6px;
 }
 
-.schedule-lock {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #475569;
-  margin: 0;
-  font-weight: 500;
-}
-
 .event-log {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #f8fafc;
+  color: #1f2937;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 16px;
   min-height: 140px;
@@ -235,6 +226,34 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.settings-group h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.settings-list {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 500;
 }
 
 .info-list {
