@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Uploader</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Загрузка роликов на YouTube</h1>
+        <p>
+          Авторизуйтесь в Google, выберите файл и загрузите его на свой канал.
+        </p>
+      </header>
+
+      <section class="card">
+        <div class="auth">
+          <label class="auth-label">
+            Название подключения
+            <input id="channelLabel" type="text" placeholder="Например: Личный канал" />
+          </label>
+          <label class="auth-label">
+            Прокси (опционально)
+            <input
+              id="proxyUrl"
+              type="text"
+              placeholder="http://user:pass@host:port"
+            />
+          </label>
+          <button id="authButton" class="primary">Подключить youtube канал</button>
+          <button id="logoutButton" class="ghost" disabled>Выйти</button>
+          <span id="authStatus" class="status">Статус: не авторизован</span>
+        </div>
+        <div id="channelsList" class="channels"></div>
+      </section>
+
+      <section class="card">
+        <form id="uploadForm">
+          <label>
+            Доступ по умолчанию
+            <select name="privacyStatus">
+              <option value="draft">Черновик</option>
+              <option value="private">Приватный</option>
+              <option value="unlisted">По ссылке</option>
+              <option value="public">Публичный</option>
+            </select>
+          </label>
+          <label class="file">
+            Видеофайлы
+            <input id="videoInput" name="videos" type="file" accept="video/*" multiple required />
+          </label>
+          <div id="scheduleList" class="schedule-list"></div>
+          <button type="submit" class="primary">Загрузить на YouTube</button>
+          <p id="uploadStatus" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Подключить instagram аккаунт</h2>
+        <form id="instagramForm">
+          <div class="auth">
+            <label class="auth-label">
+              Название подключения
+              <input id="instagramLabel" type="text" placeholder="Например: Instagram бизнес" />
+            </label>
+            <label class="auth-label">
+              Прокси (опционально)
+              <input
+                id="instagramProxyUrl"
+                type="text"
+                placeholder="http://user:pass@host:port"
+              />
+            </label>
+            <label class="auth-label">
+              Instagram Account ID
+              <input id="instagramAccountId" type="text" placeholder="1784..." />
+            </label>
+            <label class="auth-label">
+              Access Token
+              <input id="instagramAccessToken" type="text" placeholder="EAAB..." />
+            </label>
+            <button type="submit" class="primary">Подключить Instagram</button>
+            <span id="instagramStatus" class="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Подключить tiktok аккаунт</h2>
+        <form id="tiktokForm">
+          <div class="auth">
+            <label class="auth-label">
+              Название подключения
+              <input id="tiktokLabel" type="text" placeholder="Например: TikTok бренд" />
+            </label>
+            <label class="auth-label">
+              Прокси (опционально)
+              <input
+                id="tiktokProxyUrl"
+                type="text"
+                placeholder="http://user:pass@host:port"
+              />
+            </label>
+            <label class="auth-label">
+              TikTok Account ID
+              <input id="tiktokAccountId" type="text" placeholder="user_id..." />
+            </label>
+            <label class="auth-label">
+              Access Token
+              <input id="tiktokAccessToken" type="text" placeholder="act_..." />
+            </label>
+            <button type="submit" class="primary">Подключить TikTok</button>
+            <span id="tiktokStatus" class="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Связать каналы для кросспостинга</h2>
+        <form id="crosspostForm" class="stack">
+          <label>
+            YouTube канал
+            <select id="crosspostYoutube"></select>
+          </label>
+          <label>
+            Instagram аккаунт
+            <select id="crosspostInstagram"></select>
+          </label>
+          <label>
+            TikTok аккаунт
+            <select id="crosspostTiktok"></select>
+          </label>
+          <button type="submit" class="primary">Сохранить связь</button>
+          <p id="crosspostStatus" class="status" aria-live="polite"></p>
+        </form>
+        <div id="crosspostList" class="channels"></div>
+      </section>
+
+      <section class="card">
+        <h2>Лог событий</h2>
+        <div id="eventLog" class="event-log" aria-live="polite"></div>
+      </section>
+
+      <section class="card">
+        <h2>Возможности</h2>
+        <ul class="info-list">
+          <li>Подключение нескольких каналов и выбор канала для каждого ролика.</li>
+          <li>Загрузка нескольких видео с индивидуальными названиями и описаниями.</li>
+          <li>Планирование публикаций с автозаполнением каждые 4 часа.</li>
+          <li>Опциональный прокси для подключения аккаунта.</li>
+          <li>Режим «Черновик» для загрузки без публикации.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Примечания</h2>
+        <ul class="info-list">
+          <li>При планировании YouTube требует приватный статус.</li>
+          <li>Токены и список каналов хранятся в сессии и пропадают после перезапуска.</li>
+          <li>Черновик загружается как приватный ролик без расписания.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
