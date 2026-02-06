@@ -118,8 +118,43 @@
       </section>
 
       <section class="card">
+        <h2>Базовые настройки</h2>
+        <form id="settingsForm" class="stack">
+          <label>
+            Название пресета кросспостинга
+            <input id="presetName" type="text" placeholder="Например: Основной" />
+          </label>
+          <fieldset class="checklist">
+            <legend>Публиковать в соцсети</legend>
+            <label>
+              <input id="settingsYoutube" type="checkbox" />
+              YouTube
+            </label>
+            <label>
+              <input id="settingsInstagram" type="checkbox" />
+              Instagram
+            </label>
+            <label>
+              <input id="settingsTiktok" type="checkbox" />
+              TikTok
+            </label>
+          </fieldset>
+          <label class="schedule-controls">
+            <input id="settingsAutoSchedule" type="checkbox" />
+            Публикация каждые 4 часа
+          </label>
+          <button type="submit" class="primary">Сохранить настройки</button>
+          <p id="settingsStatus" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card">
         <h2>Связать каналы для кросспостинга</h2>
         <form id="crosspostForm" class="stack">
+          <label>
+            Название связи
+            <input id="crosspostName" type="text" placeholder="Например: YouTube + Instagram" />
+          </label>
           <label>
             YouTube канал
             <select id="crosspostYoutube"></select>

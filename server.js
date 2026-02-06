@@ -14,6 +14,7 @@ const CHANNELS_FILE = path.join(DATA_DIR, "channels.json");
 const INSTAGRAM_FILE = path.join(DATA_DIR, "instagram.json");
 const TIKTOK_FILE = path.join(DATA_DIR, "tiktok.json");
 const CROSSPOST_FILE = path.join(DATA_DIR, "crosspost.json");
+const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
 
 function loadStoredChannels() {
   try {
@@ -34,6 +35,7 @@ let storedChannels = loadStoredChannels();
 let storedInstagram = loadStoredInstagram();
 let storedTiktok = loadStoredTiktok();
 let storedCrosspost = loadStoredCrosspost();
+let storedSettings = loadStoredSettings();
 
 function loadStoredInstagram() {
   try {
@@ -78,6 +80,20 @@ function loadStoredCrosspost() {
 function saveStoredCrosspost(links) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(CROSSPOST_FILE, JSON.stringify(links, null, 2));
+}
+
+function loadStoredSettings() {
+  try {
+    const raw = fs.readFileSync(SETTINGS_FILE, "utf8");
+    return JSON.parse(raw);
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveStoredSettings(settings) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
 }
 
 const PORT = process.env.PORT || 3000;
@@ -301,11 +317,12 @@ app.get("/crosspost/links", (req, res) => {
 });
 
 app.post("/crosspost/links", (req, res) => {
-  const { youtubeChannelId, instagramAccountId, tiktokAccountId } = req.body || {};
+  const { name, youtubeChannelId, instagramAccountId, tiktokAccountId } = req.body || {};
   if (!youtubeChannelId) {
     return res.status(400).json({ error: "YouTube channel required" });
   }
   const link = {
+    name: name || "",
     youtubeChannelId,
     instagramAccountId: instagramAccountId || "",
     tiktokAccountId: tiktokAccountId || "",
@@ -316,6 +333,26 @@ app.post("/crosspost/links", (req, res) => {
   storedCrosspost.push(link);
   saveStoredCrosspost(storedCrosspost);
   console.info("Saved crosspost link", link);
+  return res.json({ ok: true });
+});
+
+app.get("/settings", (req, res) => {
+  res.json(storedSettings);
+});
+
+app.post("/settings", (req, res) => {
+  const { presetName, publishTo, autoSchedule } = req.body || {};
+  storedSettings = {
+    presetName: presetName || "",
+    publishTo: {
+      youtube: Boolean(publishTo?.youtube),
+      instagram: Boolean(publishTo?.instagram),
+      tiktok: Boolean(publishTo?.tiktok),
+    },
+    autoSchedule: Boolean(autoSchedule),
+  };
+  saveStoredSettings(storedSettings);
+  console.info("Saved settings", storedSettings);
   return res.json({ ok: true });
 });
 

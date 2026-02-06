@@ -27,6 +27,14 @@ const crosspostInstagram = document.getElementById("crosspostInstagram");
 const crosspostTiktok = document.getElementById("crosspostTiktok");
 const crosspostStatus = document.getElementById("crosspostStatus");
 const crosspostList = document.getElementById("crosspostList");
+const crosspostName = document.getElementById("crosspostName");
+const settingsForm = document.getElementById("settingsForm");
+const presetName = document.getElementById("presetName");
+const settingsYoutube = document.getElementById("settingsYoutube");
+const settingsInstagram = document.getElementById("settingsInstagram");
+const settingsTiktok = document.getElementById("settingsTiktok");
+const settingsAutoSchedule = document.getElementById("settingsAutoSchedule");
+const settingsStatus = document.getElementById("settingsStatus");
 
 let availableChannels = [];
 let instagramAccounts = [];
@@ -207,6 +215,7 @@ if (crosspostForm) {
     crosspostStatus.textContent = "Сохранение...";
     logEvent("Сохраняем связь для кросспостинга...");
     const payload = {
+      name: crosspostName.value.trim(),
       youtubeChannelId: crosspostYoutube.value,
       instagramAccountId: crosspostInstagram.value,
       tiktokAccountId: crosspostTiktok.value,
@@ -225,6 +234,36 @@ if (crosspostForm) {
     crosspostStatus.textContent = "Связь сохранена.";
     logEvent("Связь для кросспостинга сохранена.");
     await loadCrosspostLinks();
+  });
+}
+
+if (settingsForm) {
+  settingsForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    settingsStatus.textContent = "Сохранение...";
+    logEvent("Сохраняем базовые настройки...");
+    const payload = {
+      presetName: presetName.value.trim(),
+      publishTo: {
+        youtube: settingsYoutube.checked,
+        instagram: settingsInstagram.checked,
+        tiktok: settingsTiktok.checked,
+      },
+      autoSchedule: settingsAutoSchedule.checked,
+    };
+    const response = await fetch("/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      settingsStatus.textContent = error.error || "Ошибка сохранения";
+      logEvent(`Ошибка настроек: ${error.error || "неизвестно"}`);
+      return;
+    }
+    settingsStatus.textContent = "Настройки сохранены.";
+    logEvent("Базовые настройки сохранены.");
   });
 }
 
@@ -403,6 +442,27 @@ async function loadChannels() {
   renderScheduleItems(videoInput.files);
   await loadSocialAccounts();
   await loadCrosspostLinks();
+  await loadSettings();
+}
+
+async function loadSettings() {
+  if (!settingsForm) {
+    return;
+  }
+  const response = await fetch("/settings");
+  if (!response.ok) {
+    return;
+  }
+  const data = await response.json();
+  if (data.presetName) {
+    presetName.value = data.presetName;
+  }
+  if (data.publishTo) {
+    settingsYoutube.checked = Boolean(data.publishTo.youtube);
+    settingsInstagram.checked = Boolean(data.publishTo.instagram);
+    settingsTiktok.checked = Boolean(data.publishTo.tiktok);
+  }
+  settingsAutoSchedule.checked = Boolean(data.autoSchedule);
 }
 
 async function loadSocialAccounts() {
@@ -475,7 +535,8 @@ async function loadCrosspostLinks() {
     const ig = instagramAccounts.find((a) => a.id === link.instagramAccountId);
     const tt = tiktokAccounts.find((a) => a.id === link.tiktokAccountId);
     const row = document.createElement("span");
-    row.textContent = `YouTube: ${yt?.label || yt?.title || link.youtubeChannelId} • Instagram: ${
+    const name = link.name ? `(${link.name}) ` : "";
+    row.textContent = `${name}YouTube: ${yt?.label || yt?.title || link.youtubeChannelId} • Instagram: ${
       ig?.label || link.instagramAccountId || "—"
     } • TikTok: ${tt?.label || link.tiktokAccountId || "—"}`;
     crosspostList.appendChild(row);
