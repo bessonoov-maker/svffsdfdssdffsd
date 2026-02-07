@@ -154,9 +154,9 @@ textarea {
 
 .schedule-item {
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) 220px minmax(320px, 2fr);
+  grid-template-columns: minmax(220px, 1.2fr) minmax(320px, 2fr);
   gap: 12px;
-  align-items: center;
+  align-items: start;
   background: #f8fafc;
   border-radius: 12px;
   padding: 12px;
@@ -173,21 +173,6 @@ textarea {
 
 .schedule-item textarea {
   resize: vertical;
-}
-
-.schedule-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #475569;
-  white-space: nowrap;
-}
-
-.schedule-date {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .schedule-item span {

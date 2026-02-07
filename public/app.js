@@ -220,6 +220,7 @@ function renderScheduleItems(files) {
   if (!files || files.length === 0) {
     return;
   }
+  const startDate = new Date(Date.now() + 10 * 60 * 1000);
   Array.from(files).forEach((file, index) => {
     const wrapper = document.createElement("div");
     wrapper.className = "schedule-item";
@@ -232,20 +233,6 @@ function renderScheduleItems(files) {
     input.name = "publishAt";
     input.placeholder = "Дата и время публикации";
 
-    const scheduleControls = document.createElement("label");
-    scheduleControls.className = "schedule-controls";
-
-    const autoCheckbox = document.createElement("input");
-    autoCheckbox.type = "checkbox";
-    autoCheckbox.name = "autoSchedule";
-    autoCheckbox.dataset.index = index.toString();
-
-    const autoText = document.createElement("span");
-    autoText.textContent = "Каждые 4 часа";
-
-    scheduleControls.appendChild(autoCheckbox);
-    scheduleControls.appendChild(autoText);
-
     const titleInput = document.createElement("input");
     titleInput.type = "text";
     titleInput.name = "title";
@@ -256,45 +243,43 @@ function renderScheduleItems(files) {
     descriptionInput.name = "description";
     descriptionInput.placeholder = "Описание ролика";
     descriptionInput.rows = 2;
+    descriptionInput.value = "#astrology #horoscope #astro";
 
     const metaWrapper = document.createElement("div");
     metaWrapper.className = "schedule-meta";
     metaWrapper.appendChild(titleInput);
     metaWrapper.appendChild(descriptionInput);
+    metaWrapper.appendChild(input);
 
-    const dateWrapper = document.createElement("div");
-    dateWrapper.className = "schedule-date";
-    dateWrapper.appendChild(input);
-    if (index === 0) {
-      dateWrapper.appendChild(scheduleControls);
-    }
+    const nextDate = new Date(startDate.getTime() + index * 4 * 60 * 60 * 1000);
+    input.value = formatDateTimeLocal(nextDate);
+    input.dataset.auto = "true";
+    input.addEventListener("input", () => {
+      input.dataset.auto = "false";
+    });
 
     wrapper.appendChild(name);
-    wrapper.appendChild(dateWrapper);
     wrapper.appendChild(metaWrapper);
     scheduleList.appendChild(wrapper);
 
     if (index === 0) {
-      autoCheckbox.addEventListener("change", () => {
-        if (!autoCheckbox.checked || !input.value) {
-          return;
-        }
-        const startDate = new Date(input.value);
-        if (Number.isNaN(startDate.getTime())) {
+      input.addEventListener("change", () => {
+        const baseDate = new Date(input.value);
+        if (Number.isNaN(baseDate.getTime())) {
           return;
         }
         const scheduleInputs = scheduleList.querySelectorAll("input[name='publishAt']");
         scheduleInputs.forEach((scheduleInput, scheduleIndex) => {
-          if (scheduleIndex === 0) {
+          if (scheduleIndex === 0 || scheduleInput.dataset.auto !== "true") {
             return;
           }
-          const nextDate = new Date(startDate.getTime() + scheduleIndex * 4 * 60 * 60 * 1000);
-          const formatted = formatDateTimeLocal(nextDate);
-          scheduleInput.value = formatted;
+          const nextAutoDate = new Date(
+            baseDate.getTime() + scheduleIndex * 4 * 60 * 60 * 1000
+          );
+          scheduleInput.value = formatDateTimeLocal(nextAutoDate);
         });
       });
     }
-
   });
 }
 
