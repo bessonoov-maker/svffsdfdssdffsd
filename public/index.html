@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Uploader</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Подключить youtube аккаунт <span aria-hidden="true">▶️</span></h1>
+        <p>
+          Авторизуйтесь в Google, выберите файл и загрузите его на свой канал.
+        </p>
+      </header>
+
+      <section class="card">
+        <div class="auth">
+          <label class="auth-label">
+            Название подключения
+            <input id="channelLabel" type="text" placeholder="Например: Личный канал" />
+          </label>
+          <label class="auth-label">
+            Прокси (опционально)
+            <input
+              id="proxyUrl"
+              type="text"
+              placeholder="http://user:pass@host:port"
+            />
+          </label>
+          <button id="authButton" class="primary">Подключить youtube канал</button>
+          <button id="logoutButton" class="ghost" disabled>Выйти</button>
+          <span id="authStatus" class="status">Статус: не авторизован</span>
+        </div>
+        <div id="channelsList" class="channels"></div>
+      </section>
+
+      <section class="card">
+        <h2>Базовые настройки</h2>
+        <form id="settingsForm" class="stack">
+          <div class="settings-columns">
+            <div class="settings-group">
+              <h3>YouTube каналы</h3>
+              <div id="settingsYoutubeList" class="settings-list"></div>
+            </div>
+            <div class="settings-group">
+              <h3>Instagram аккаунты</h3>
+              <div id="settingsInstagramList" class="settings-list"></div>
+            </div>
+            <div class="settings-group">
+              <h3>TikTok аккаунты</h3>
+              <div id="settingsTiktokList" class="settings-list"></div>
+            </div>
+          </div>
+          <button type="submit" class="primary">Сохранить настройки</button>
+          <p id="settingsStatus" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Загрузка контента</h2>
+        <form id="uploadForm">
+          <label>
+            Доступ по умолчанию
+            <select name="privacyStatus">
+              <option value="draft">Черновик</option>
+              <option value="private">Приватный</option>
+              <option value="unlisted">По ссылке</option>
+              <option value="public">Публичный</option>
+            </select>
+          </label>
+          <label class="file">
+            Видеофайлы
+            <input id="videoInput" name="videos" type="file" accept="video/*" multiple required />
+          </label>
+          <div id="scheduleList" class="schedule-list"></div>
+          <button id="uploadButton" type="submit" class="primary" disabled>
+            Загрузить на YouTube
+          </button>
+          <p id="uploadStatus" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Подключить instagram аккаунт <span aria-hidden="true">📷</span></h2>
+        <form id="instagramForm">
+          <div class="auth">
+            <label class="auth-label">
+              Название подключения
+              <input id="instagramLabel" type="text" placeholder="Например: Instagram бизнес" />
+            </label>
+            <label class="auth-label">
+              Прокси (опционально)
+              <input
+                id="instagramProxyUrl"
+                type="text"
+                placeholder="http://user:pass@host:port"
+              />
+            </label>
+            <label class="auth-label">
+              Instagram Account ID
+              <input id="instagramAccountId" type="text" placeholder="1784..." />
+            </label>
+            <label class="auth-label">
+              Access Token
+              <input id="instagramAccessToken" type="text" placeholder="EAAB..." />
+            </label>
+            <button type="submit" class="primary">Подключить Instagram</button>
+            <span id="instagramStatus" class="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Подключить tiktok аккаунт <span aria-hidden="true">🎵</span></h2>
+        <form id="tiktokForm">
+          <div class="auth">
+            <label class="auth-label">
+              Название подключения
+              <input id="tiktokLabel" type="text" placeholder="Например: TikTok бренд" />
+            </label>
+            <label class="auth-label">
+              Прокси (опционально)
+              <input
+                id="tiktokProxyUrl"
+                type="text"
+                placeholder="http://user:pass@host:port"
+              />
+            </label>
+            <label class="auth-label">
+              TikTok Account ID
+              <input id="tiktokAccountId" type="text" placeholder="user_id..." />
+            </label>
+            <label class="auth-label">
+              Access Token
+              <input id="tiktokAccessToken" type="text" placeholder="act_..." />
+            </label>
+            <button type="submit" class="primary">Подключить TikTok</button>
+            <span id="tiktokStatus" class="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Инструкции</h2>
+        <ol class="info-list">
+          <li>Подключите YouTube аккаунт через кнопку авторизации.</li>
+          <li>При необходимости подключите Instagram и TikTok аккаунты.</li>
+          <li>В «Базовых настройках» отметьте аккаунты, куда нужно отправлять контент.</li>
+          <li>Выберите видеоролики и задайте названия, описания и время публикации.</li>
+          <li>Если выбран режим «Черновик», ролик загрузится без публикации.</li>
+          <li>Нажмите «Загрузить на YouTube» и дождитесь статуса завершения.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>Лог событий</h2>
+        <div id="eventLog" class="event-log" aria-live="polite"></div>
+      </section>
+
+      <section class="card">
+        <h2>Возможности</h2>
+        <ul class="info-list">
+          <li>Подключение нескольких аккаунтов YouTube, Instagram и TikTok.</li>
+          <li>Массовый выбор аккаунтов для публикации через базовые настройки.</li>
+          <li>Загрузка нескольких видео с индивидуальными названиями и описаниями.</li>
+          <li>Планирование публикаций с автозаполнением каждые 4 часа.</li>
+          <li>Режим «Черновик» для загрузки без публикации.</li>
+          <li>Опциональный прокси для подключения аккаунтов.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Примечания</h2>
+        <ul class="info-list">
+          <li>Для планирования YouTube требует приватный статус до даты публикации.</li>
+          <li>Выбранные аккаунты для публикации сохраняются в базовых настройках.</li>
+          <li>Черновик загружается на канал без публикации и уведомлений.</li>
+          <li>Подключенные каналы и токены сохраняются локально и восстанавливаются при старте.</li>
+          <li>Проект написан на JavaScript, сервер — Node.js + Express, фронтенд — чистые HTML/CSS/JS.</li>
+          <li>Интеграция с YouTube выполняется через Google APIs (YouTube Data API v3).</li>
+          <li>Данные аккаунтов и заметки сохраняются локально в JSON-файлах.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Заметки</h2>
+        <form id="notesForm" class="stack">
+          <label>
+            Ваши заметки
+            <textarea id="notesText" rows="6" placeholder="Введите заметки..."></textarea>
+          </label>
+          <button type="submit" class="primary">Сохранить заметки</button>
+          <p id="notesStatus" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
