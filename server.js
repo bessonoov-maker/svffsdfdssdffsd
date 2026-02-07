@@ -343,11 +343,11 @@ app.post("/upload", ensureAuthenticated, upload.array("videos"), async (req, res
     const publishAtList = Array.isArray(publishAtValues)
       ? publishAtValues
       : [publishAtValues];
-    const channelValues = req.body.channelId || [];
-    const channelList = Array.isArray(channelValues)
-      ? channelValues
-      : [channelValues];
     const channels = storedChannels;
+    const selectedChannelIds = storedSettings?.selectedChannels?.youtube || [];
+    if (!Array.isArray(selectedChannelIds) || selectedChannelIds.length === 0) {
+      return res.status(400).json({ error: "Select YouTube channels in settings" });
+    }
 
     console.info("Upload request received", {
       files: files.length,
@@ -370,22 +370,6 @@ app.post("/upload", ensureAuthenticated, upload.array("videos"), async (req, res
         : isDraft
           ? "private"
           : privacyStatus || "private";
-      const selectedChannelId = channelList[index] || channels[0]?.id;
-      const channel = channels.find((item) => item.id === selectedChannelId);
-
-      if (!channel) {
-        fs.unlink(filePath, () => {});
-        return res.status(400).json({ error: "Selected channel not found" });
-      }
-
-      const authedClient = createOAuthClient(channel.tokens);
-      const proxyAgent = channel.proxyUrl ? new HttpsProxyAgent(channel.proxyUrl) : undefined;
-      const youtube = google.youtube({
-        version: "v3",
-        auth: authedClient,
-        requestOptions: proxyAgent ? { agent: proxyAgent } : undefined,
-      });
-
       const requestBody = {
         snippet: {
           title: videoTitle,
@@ -397,31 +381,49 @@ app.post("/upload", ensureAuthenticated, upload.array("videos"), async (req, res
         },
       };
 
-      console.info("Uploading video", {
-        index: index + 1,
-        file: file.originalname,
-        channel: channel.title,
-        publishAt: scheduledPublishAt || (isDraft ? "draft" : "immediate"),
-      });
+      for (const selectedChannelId of selectedChannelIds) {
+        const channel = channels.find((item) => item.id === selectedChannelId);
 
-      const response = await youtube.videos.insert({
-        part: ["snippet", "status"],
-        requestBody,
-        media: {
-          body: fs.createReadStream(filePath),
-        },
-      });
+        if (!channel) {
+          fs.unlink(filePath, () => {});
+          return res.status(400).json({ error: "Selected channel not found" });
+        }
+
+        const authedClient = createOAuthClient(channel.tokens);
+        const proxyAgent = channel.proxyUrl ? new HttpsProxyAgent(channel.proxyUrl) : undefined;
+        const youtube = google.youtube({
+          version: "v3",
+          auth: authedClient,
+          requestOptions: proxyAgent ? { agent: proxyAgent } : undefined,
+        });
+
+        console.info("Uploading video", {
+          index: index + 1,
+          file: file.originalname,
+          channel: channel.title,
+          publishAt: scheduledPublishAt || (isDraft ? "draft" : "immediate"),
+        });
+
+        const response = await youtube.videos.insert({
+          part: ["snippet", "status"],
+          requestBody,
+          media: {
+            body: fs.createReadStream(filePath),
+          },
+          ...(isDraft ? { notifySubscribers: false } : {}),
+        });
+
+        results.push({
+          id: response.data.id,
+          title: response.data.snippet?.title,
+          status: response.data.status?.privacyStatus,
+          publishAt: response.data.status?.publishAt,
+          channelId: channel.id,
+          channelTitle: channel.title,
+        });
+      }
 
       fs.unlink(filePath, () => {});
-
-      results.push({
-        id: response.data.id,
-        title: response.data.snippet?.title,
-        status: response.data.status?.privacyStatus,
-        publishAt: response.data.status?.publishAt,
-        channelId: channel.id,
-        channelTitle: channel.title,
-      });
     }
 
     res.json({ uploads: results });

@@ -96,7 +96,6 @@ uploadForm.addEventListener("submit", async (event) => {
   const perFilePublishAtInputs = scheduleList.querySelectorAll(
     "input[name='publishAt']"
   );
-  const perFileChannelInputs = scheduleList.querySelectorAll("select[name='channelId']");
   perFileTitleInputs.forEach((input) => {
     formData.append("title", input.value);
   });
@@ -105,9 +104,6 @@ uploadForm.addEventListener("submit", async (event) => {
   });
   perFilePublishAtInputs.forEach((input) => {
     formData.append("publishAt", input.value);
-  });
-  perFileChannelInputs.forEach((input) => {
-    formData.append("channelId", input.value);
   });
   const response = await fetch("/upload", {
     method: "POST",
@@ -266,39 +262,16 @@ function renderScheduleItems(files) {
     metaWrapper.appendChild(titleInput);
     metaWrapper.appendChild(descriptionInput);
 
-    const channelSelect = document.createElement("select");
-    channelSelect.name = "channelId";
-    channelSelect.required = true;
-
-    if (availableChannels.length === 0) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "Сначала подключите канал";
-      channelSelect.appendChild(option);
-    } else {
-      availableChannels.forEach((channel) => {
-        const option = document.createElement("option");
-        option.value = channel.id;
-        option.textContent = channel.label || channel.title;
-        channelSelect.appendChild(option);
-      });
+    const dateWrapper = document.createElement("div");
+    dateWrapper.className = "schedule-date";
+    dateWrapper.appendChild(input);
+    if (index === 0) {
+      dateWrapper.appendChild(scheduleControls);
     }
 
     wrapper.appendChild(name);
-    wrapper.appendChild(input);
-    if (index === 0) {
-      wrapper.appendChild(scheduleControls);
-    } else {
-      const spacer = document.createElement("span");
-      spacer.textContent = "";
-      wrapper.appendChild(spacer);
-    }
+    wrapper.appendChild(dateWrapper);
     wrapper.appendChild(metaWrapper);
-    const channelWrapper = document.createElement("div");
-    channelWrapper.className = "schedule-channel";
-    channelWrapper.appendChild(channelSelect);
-
-    wrapper.appendChild(channelWrapper);
     scheduleList.appendChild(wrapper);
 
     if (index === 0) {

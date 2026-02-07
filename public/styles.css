@@ -154,7 +154,7 @@ textarea {
 
 .schedule-item {
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) 220px minmax(280px, 2fr) 240px;
+  grid-template-columns: minmax(220px, 1.2fr) 220px minmax(320px, 2fr);
   gap: 12px;
   align-items: center;
   background: #f8fafc;
@@ -184,6 +184,12 @@ textarea {
   white-space: nowrap;
 }
 
+.schedule-date {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .schedule-item span {
   font-size: 14px;
   color: #1f2937;
@@ -204,12 +210,6 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.schedule-channel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .event-log {
@@ -262,4 +262,9 @@ textarea {
   color: #475569;
   display: grid;
   gap: 8px;
+}
+.settings-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
