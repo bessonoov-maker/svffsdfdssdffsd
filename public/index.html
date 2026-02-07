@@ -37,6 +37,29 @@
       </section>
 
       <section class="card">
+        <h2>Базовые настройки</h2>
+        <form id="settingsForm" class="stack">
+          <div class="settings-columns">
+            <div class="settings-group">
+              <h3>YouTube каналы</h3>
+              <div id="settingsYoutubeList" class="settings-list"></div>
+            </div>
+            <div class="settings-group">
+              <h3>Instagram аккаунты</h3>
+              <div id="settingsInstagramList" class="settings-list"></div>
+            </div>
+            <div class="settings-group">
+              <h3>TikTok аккаунты</h3>
+              <div id="settingsTiktokList" class="settings-list"></div>
+            </div>
+          </div>
+          <button type="submit" class="primary">Сохранить настройки</button>
+          <p id="settingsStatus" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Загрузка контента</h2>
         <form id="uploadForm">
           <label>
             Доступ по умолчанию
@@ -114,28 +137,6 @@
             <button type="submit" class="primary">Подключить TikTok</button>
             <span id="tiktokStatus" class="status" aria-live="polite"></span>
           </div>
-        </form>
-      </section>
-
-      <section class="card">
-        <h2>Базовые настройки</h2>
-        <form id="settingsForm" class="stack">
-          <div class="settings-columns">
-            <div class="settings-group">
-              <h3>YouTube каналы</h3>
-              <div id="settingsYoutubeList" class="settings-list"></div>
-            </div>
-            <div class="settings-group">
-              <h3>Instagram аккаунты</h3>
-              <div id="settingsInstagramList" class="settings-list"></div>
-            </div>
-            <div class="settings-group">
-              <h3>TikTok аккаунты</h3>
-              <div id="settingsTiktokList" class="settings-list"></div>
-            </div>
-          </div>
-          <button type="submit" class="primary">Сохранить настройки</button>
-          <p id="settingsStatus" class="status" aria-live="polite"></p>
         </form>
       </section>
 

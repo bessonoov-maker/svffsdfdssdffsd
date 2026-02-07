@@ -216,6 +216,7 @@ if (settingsForm) {
 }
 
 function renderScheduleItems(files) {
+  cleanupVideoPreviews();
   scheduleList.innerHTML = "";
   if (!files || files.length === 0) {
     return;
@@ -227,6 +228,15 @@ function renderScheduleItems(files) {
 
     const name = document.createElement("span");
     name.textContent = `${index + 1}. ${file.name}`;
+    name.className = "schedule-name";
+
+    const videoPreview = document.createElement("video");
+    videoPreview.className = "schedule-preview";
+    videoPreview.controls = true;
+    videoPreview.preload = "metadata";
+    const objectUrl = URL.createObjectURL(file);
+    videoPreview.src = objectUrl;
+    videoPreview.dataset.objectUrl = objectUrl;
 
     const input = document.createElement("input");
     input.type = "datetime-local";
@@ -259,6 +269,7 @@ function renderScheduleItems(files) {
     });
 
     wrapper.appendChild(name);
+    wrapper.appendChild(videoPreview);
     wrapper.appendChild(metaWrapper);
     scheduleList.appendChild(wrapper);
 
@@ -307,7 +318,7 @@ async function loadChannels() {
   } else {
     availableChannels.forEach((channel) => {
       const item = document.createElement("span");
-      item.textContent = `${channel.label || channel.title} (${channel.title})`;
+      item.textContent = channel.label || channel.title;
       channelsList.appendChild(item);
     });
   }
@@ -418,4 +429,14 @@ function logEvent(message) {
   });
   row.textContent = `[${stamp}] ${message}`;
   eventLog.prepend(row);
+}
+
+function cleanupVideoPreviews() {
+  const previews = scheduleList.querySelectorAll("video[data-object-url]");
+  previews.forEach((preview) => {
+    const url = preview.dataset.objectUrl;
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  });
 }
