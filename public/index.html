@@ -75,7 +75,9 @@
             <input id="videoInput" name="videos" type="file" accept="video/*" multiple required />
           </label>
           <div id="scheduleList" class="schedule-list"></div>
-          <button type="submit" class="primary">Загрузить на YouTube</button>
+          <button id="uploadButton" type="submit" class="primary" disabled>
+            Загрузить на YouTube
+          </button>
           <p id="uploadStatus" class="status" aria-live="polite"></p>
         </form>
       </section>
@@ -176,7 +178,22 @@
           <li>Выбранные аккаунты для публикации сохраняются в базовых настройках.</li>
           <li>Черновик загружается на канал без публикации и уведомлений.</li>
           <li>Подключенные каналы и токены сохраняются локально и восстанавливаются при старте.</li>
+          <li>Проект написан на JavaScript, сервер — Node.js + Express, фронтенд — чистые HTML/CSS/JS.</li>
+          <li>Интеграция с YouTube выполняется через Google APIs (YouTube Data API v3).</li>
+          <li>Данные аккаунтов и заметки сохраняются локально в JSON-файлах.</li>
         </ul>
+      </section>
+
+      <section class="card">
+        <h2>Заметки</h2>
+        <form id="notesForm" class="stack">
+          <label>
+            Ваши заметки
+            <textarea id="notesText" rows="6" placeholder="Введите заметки..."></textarea>
+          </label>
+          <button type="submit" class="primary">Сохранить заметки</button>
+          <p id="notesStatus" class="status" aria-live="polite"></p>
+        </form>
       </section>
     </main>
 

@@ -14,6 +14,7 @@ const CHANNELS_FILE = path.join(DATA_DIR, "channels.json");
 const INSTAGRAM_FILE = path.join(DATA_DIR, "instagram.json");
 const TIKTOK_FILE = path.join(DATA_DIR, "tiktok.json");
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
+const NOTES_FILE = path.join(DATA_DIR, "notes.json");
 
 function loadStoredChannels() {
   try {
@@ -34,6 +35,7 @@ let storedChannels = loadStoredChannels();
 let storedInstagram = loadStoredInstagram();
 let storedTiktok = loadStoredTiktok();
 let storedSettings = loadStoredSettings();
+let storedNotes = loadStoredNotes();
 
 function loadStoredInstagram() {
   try {
@@ -77,6 +79,21 @@ function loadStoredSettings() {
 function saveStoredSettings(settings) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+}
+
+function loadStoredNotes() {
+  try {
+    const raw = fs.readFileSync(NOTES_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    return typeof parsed === "string" ? parsed : parsed?.text || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function saveStoredNotes(text) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(NOTES_FILE, JSON.stringify({ text }, null, 2));
 }
 
 const PORT = process.env.PORT || 3000;
@@ -312,6 +329,18 @@ app.post("/settings", (req, res) => {
   };
   saveStoredSettings(storedSettings);
   console.info("Saved settings", storedSettings);
+  return res.json({ ok: true });
+});
+
+app.get("/notes", (req, res) => {
+  res.json({ text: storedNotes || "" });
+});
+
+app.post("/notes", (req, res) => {
+  const { text } = req.body || {};
+  storedNotes = typeof text === "string" ? text : "";
+  saveStoredNotes(storedNotes);
+  console.info("Saved notes");
   return res.json({ ok: true });
 });
 

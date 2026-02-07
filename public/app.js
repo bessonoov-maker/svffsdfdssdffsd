@@ -3,6 +3,7 @@ const logoutButton = document.getElementById("logoutButton");
 const authStatus = document.getElementById("authStatus");
 const uploadForm = document.getElementById("uploadForm");
 const uploadStatus = document.getElementById("uploadStatus");
+const uploadButton = document.getElementById("uploadButton");
 const videoInput = document.getElementById("videoInput");
 const scheduleList = document.getElementById("scheduleList");
 const channelLabelInput = document.getElementById("channelLabel");
@@ -26,6 +27,9 @@ const settingsStatus = document.getElementById("settingsStatus");
 const settingsYoutubeList = document.getElementById("settingsYoutubeList");
 const settingsInstagramList = document.getElementById("settingsInstagramList");
 const settingsTiktokList = document.getElementById("settingsTiktokList");
+const notesForm = document.getElementById("notesForm");
+const notesText = document.getElementById("notesText");
+const notesStatus = document.getElementById("notesStatus");
 
 let availableChannels = [];
 let instagramAccounts = [];
@@ -134,6 +138,27 @@ uploadForm.addEventListener("submit", async (event) => {
 
 refreshStatus();
 
+if (notesForm) {
+  notesForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    notesStatus.textContent = "Сохранение...";
+    const payload = { text: notesText.value };
+    const response = await fetch("/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      notesStatus.textContent = error.error || "Ошибка сохранения";
+      logEvent(`Ошибка заметок: ${error.error || "неизвестно"}`);
+      return;
+    }
+    notesStatus.textContent = "Заметки сохранены.";
+    logEvent("Заметки сохранены.");
+  });
+}
+
 if (instagramForm) {
   instagramForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -212,6 +237,7 @@ if (settingsForm) {
     }
     settingsStatus.textContent = "Настройки сохранены.";
     logEvent("Базовые настройки сохранены.");
+    updateUploadState();
   });
 }
 
@@ -219,6 +245,7 @@ function renderScheduleItems(files) {
   cleanupVideoPreviews();
   scheduleList.innerHTML = "";
   if (!files || files.length === 0) {
+    updateUploadState();
     return;
   }
   const startDate = new Date(Date.now() + 10 * 60 * 1000);
@@ -254,6 +281,7 @@ function renderScheduleItems(files) {
     descriptionInput.placeholder = "Описание ролика";
     descriptionInput.rows = 2;
     descriptionInput.value = "#astrology #horoscope #astro";
+    descriptionInput.addEventListener("input", updateUploadState);
 
     const metaWrapper = document.createElement("div");
     metaWrapper.className = "schedule-meta";
@@ -292,6 +320,7 @@ function renderScheduleItems(files) {
       });
     }
   });
+  updateUploadState();
 }
 
 function formatDateTimeLocal(date) {
@@ -325,6 +354,8 @@ async function loadChannels() {
   renderScheduleItems(videoInput.files);
   await loadSocialAccounts();
   await loadSettings();
+  await loadNotes();
+  updateUploadState();
 }
 
 async function loadSettings() {
@@ -337,6 +368,7 @@ async function loadSettings() {
   }
   const data = await response.json();
   applySelectedChannels(data.selectedChannels || {});
+  updateUploadState();
 }
 
 async function loadSocialAccounts() {
@@ -373,6 +405,7 @@ function renderSettingsList(container, items, network) {
     checkbox.type = "checkbox";
     checkbox.dataset.network = network;
     checkbox.value = item.id;
+    checkbox.addEventListener("change", updateUploadState);
     const text = document.createElement("span");
     text.textContent = item.label || item.title || item.id;
     label.appendChild(checkbox);
@@ -414,6 +447,32 @@ function applySelectedChannels(selectedChannels) {
     const list = selectedChannels?.[network] || [];
     checkbox.checked = list.includes(checkbox.value);
   });
+}
+
+async function loadNotes() {
+  if (!notesText) {
+    return;
+  }
+  const response = await fetch("/notes");
+  if (!response.ok) {
+    return;
+  }
+  const data = await response.json();
+  notesText.value = data.text || "";
+}
+
+function updateUploadState() {
+  if (!uploadButton) {
+    return;
+  }
+  const hasSelectedChannels =
+    settingsForm?.querySelectorAll(".settings-option input[data-network='youtube']:checked")
+      .length > 0;
+  const descriptionInputs = scheduleList.querySelectorAll("textarea[name='description']");
+  const hasDescriptions =
+    descriptionInputs.length > 0 &&
+    Array.from(descriptionInputs).every((input) => input.value.trim().length > 0);
+  uploadButton.disabled = !(hasSelectedChannels && hasDescriptions);
 }
 
 function logEvent(message) {
